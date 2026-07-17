@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FF6B6B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Petits Mots">
+<title>Petits Mots</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<style>
+  :root {
+    --coral: #FF6B6B;
+    --coral-dark: #E85555;
+    --teal: #2EC4B6;
+    --teal-dark: #25A99D;
+    --sun: #FFD166;
+    --cream: #FFF7ED;
+    --ink: #3D405B;
+    --ink-soft: #6B6E8A;
+    --white: #FFFFFF;
+    --red: #E63946;
+    --radius: 22px;
+    --shadow: 0 4px 14px rgba(61, 64, 91, 0.12);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    overflow-x: hidden;
+    touch-action: manipulation;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  input, textarea { user-select: text; -webkit-user-select: text; }
+
+  .screen {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: calc(env(safe-area-inset-top, 0px) + 16px)
+             calc(env(safe-area-inset-right, 0px) + 16px)
+             calc(env(safe-area-inset-bottom, 0px) + 16px)
+             calc(env(safe-area-inset-left, 0px) + 16px);
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .screen.active { display: flex; }
+
+  button {
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    background: none;
+  }
+  button:active { transform: scale(0.96); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: var(--radius);
+    font-size: 18px;
+    font-weight: 700;
+    padding: 16px 24px;
+    min-height: 56px;
+    box-shadow: var(--shadow);
+    transition: transform 0.1s ease;
+  }
+  .btn-primary { background: var(--coral); color: var(--white); }
+  .btn-teal { background: var(--teal); color: var(--white); }
+  .btn-sun { background: var(--sun); color: var(--ink); }
+  .btn-ghost { background: var(--white); color: var(--ink); }
+  .btn-danger { background: var(--red); color: var(--white); }
+  .btn-big { font-size: 24px; padding: 20px 36px; min-height: 72px; border-radius: 28px; }
+  .btn-block { width: 100%; }
+  .btn:disabled { opacity: 0.4; }
+
+  /* ============ HOME ============ */
+  #screen-home { justify-content: space-between; text-align: center; }
+  .home-top { display: flex; justify-content: space-between; align-items: center; }
+  .stars-badge {
+    background: var(--white);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 18px;
+    font-weight: 800;
+    box-shadow: var(--shadow);
+    color: var(--ink);
+  }
+  .home-mid { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0; }
+  .mascot { font-size: 96px; line-height: 1; animation: bob 3s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-10px) rotate(3deg); } }
+  .app-title { font-size: 40px; font-weight: 900; color: var(--coral); letter-spacing: -1px; }
+  .app-sub { font-size: 17px; color: var(--ink-soft); font-weight: 600; }
+  .due-pill {
+    margin-top: 14px;
+    background: var(--white);
+    border-radius: 18px;
+    padding: 12px 20px;
+    font-size: 17px;
+    font-weight: 700;
+    box-shadow: var(--shadow);
+  }
+  .home-bottom { display: flex; flex-direction: column; gap: 12px; padding-bottom: 8px; }
+  .parent-hold {
+    position: relative;
+    margin: 4px auto 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    background: none;
+    padding: 12px 20px;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .parent-hold .hold-fill {
+    position: absolute;
+    inset: 0;
+    background: rgba(46, 196, 182, 0.25);
+    transform: scaleX(0);
+    transform-origin: left;
+    border-radius: 999px;
+  }
+  .parent-hold.holding .hold-fill { transform: scaleX(1); transition: transform 1.2s linear; }
+
+  /* ============ SESSION ============ */
+  #screen-session { gap: 14px; }
+  .session-top { display: flex; align-items: center; gap: 14px; }
+  .icon-btn {
+    width: 48px; height: 48px;
+    min-width: 48px;
+    border-radius: 50%;
+    background: var(--white);
+    box-shadow: var(--shadow);
+    font-size: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink);
+  }
+  .progress-track {
+    flex: 1;
+    height: 14px;
+    background: rgba(61, 64, 91, 0.1);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--sun), var(--coral));
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+  .practice-tag {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--teal-dark);
+    display: none;
+  }
+  .practice-tag.show { display: block; }
+  .card-zone { flex: 1; display: flex; align-items: center; justify-content: center; padding: 4px 0; }
+  .flashcard {
+    width: 100%;
+    max-width: 420px;
+    background: var(--white);
+    border-radius: 32px;
+    box-shadow: 0 10px 30px rgba(61, 64, 91, 0.16);
+    padding: 26px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    min-height: 340px;
+    justify-content: center;
+    position: relative;
+  }
+  .flashcard.pop { animation: cardpop 0.35s ease; }
+  @keyframes cardpop { 0% { transform: scale(0.92); opacity: 0.4; } 100% { transform: scale(1); opacity: 1; } }
+  .card-pic { font-size: 130px; line-height: 1.1; }
+  .card-pic img {
+    width: 220px; height: 220px;
+    object-fit: cover;
+    border-radius: 24px;
+    display: block;
+  }
+  .card-word {
+    font-size: 34px;
+    font-weight: 900;
+    color: var(--ink);
+    text-align: center;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-hint { font-size: 16px; color: var(--ink-soft); font-weight: 600; }
+  .tap-hint {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--teal-dark);
+    background: rgba(46, 196, 182, 0.12);
+    padding: 8px 18px;
+    border-radius: 999px;
+  }
+  .answer-row { display: flex; gap: 12px; padding-bottom: 6px; }
+  .answer-row .btn { flex: 1; flex-direction: column; gap: 2px; min-height: 88px; font-size: 17px; }
+  .answer-row .btn .big-emoji { font-size: 34px; }
+  .answer-row.hidden-row { visibility: hidden; }
+
+  /* ============ DONE ============ */
+  #screen-done { justify-content: center; align-items: center; text-align: center; gap: 18px; position: relative; overflow: hidden; }
+  .done-title { font-size: 44px; font-weight: 900; color: var(--coral); }
+  .done-stars { font-size: 26px; font-weight: 800; }
+  .done-total { font-size: 17px; color: var(--ink-soft); font-weight: 600; }
+  .done-buttons { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px; margin-top: 10px; }
+  .confetti-bit {
+    position: absolute;
+    top: -40px;
+    font-size: 26px;
+    animation: fall linear forwards;
+    pointer-events: none;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(360deg); opacity: 0.6; }
+  }
+
+  /* ============ PARENT ============ */
+  #screen-parent { gap: 16px; }
+  .parent-top { display: flex; align-items: center; gap: 12px; }
+  .parent-top h2 { font-size: 24px; font-weight: 900; flex: 1; }
+  .panel {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px;
+  }
+  .panel h3 { font-size: 16px; font-weight: 800; margin-bottom: 12px; color: var(--ink); }
+  .boxbar { display: flex; height: 22px; border-radius: 999px; overflow: hidden; background: rgba(61,64,91,0.08); }
+  .boxbar div { transition: width 0.4s ease; }
+  .box-legend { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+  .box-legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+  .due-note { margin-top: 12px; font-size: 14px; font-weight: 700; color: var(--ink); }
+  .cards-list { display: flex; flex-direction: column; gap: 10px; }
+  .card-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--cream);
+    border-radius: 16px;
+    padding: 10px 12px;
+  }
+  .card-row .row-pic { font-size: 34px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
+  .card-row .row-pic img { width: 44px; height: 44px; object-fit: cover; border-radius: 10px; }
+  .card-row .row-text { flex: 1; min-width: 0; }
+  .card-row .row-word { font-weight: 800; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card-row .row-sub { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; }
+  .row-badge {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--white);
+    border-radius: 999px;
+    padding: 3px 8px;
+    margin-left: 6px;
+  }
+  .mini-btn {
+    width: 42px; height: 42px; min-width: 42px;
+    border-radius: 12px;
+    background: var(--white);
+    box-shadow: 0 2px 6px rgba(61,64,91,0.12);
+    font-size: 17px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .settings-list { display: flex; flex-direction: column; gap: 10px; }
+  .empty-state { text-align: center; padding: 24px 10px; color: var(--ink-soft); font-weight: 600; font-size: 15px; }
+  .empty-state .big { font-size: 44px; margin-bottom: 8px; }
+
+  /* ============ MODALS ============ */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(61, 64, 91, 0.45);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 50;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: 26px 26px 0 0;
+    width: 100%;
+    max-width: 560px;
+    max-height: 88vh;
+    max-height: 88dvh;
+    overflow-y: auto;
+    padding: 22px 20px calc(env(safe-area-inset-bottom, 0px) + 22px);
+    animation: slideup 0.25s ease;
+  }
+  @keyframes slideup { from { transform: translateY(40px); opacity: 0.5; } to { transform: translateY(0); opacity: 1; } }
+  .modal h3 { font-size: 20px; font-weight: 900; margin-bottom: 16px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 800; color: var(--ink-soft); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .field input[type="text"] {
+    width: 100%;
+    font-size: 17px;
+    font-weight: 600;
+    padding: 13px 14px;
+    border: 2px solid rgba(61, 64, 91, 0.14);
+    border-radius: 14px;
+    background: var(--cream);
+    color: var(--ink);
+    outline: none;
+  }
+  .field input[type="text"]:focus { border-color: var(--teal); }
+  .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin-top: 8px; }
+  .emoji-grid button { font-size: 24px; padding: 6px 0; border-radius: 10px; }
+  .emoji-grid button:active { background: var(--cream); }
+  .pic-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .pic-preview img { width: 64px; height: 64px; object-fit: cover; border-radius: 14px; }
+  .pic-preview .the-emoji { font-size: 48px; }
+  .link-btn { font-size: 14px; font-weight: 700; color: var(--teal-dark); padding: 8px 4px; }
+  .audio-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .rec-btn { background: var(--cream); border-radius: 14px; padding: 12px 16px; font-weight: 700; font-size: 15px; box-shadow: 0 2px 6px rgba(61,64,91,0.08); }
+  .rec-btn.recording { background: var(--red); color: var(--white); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+  .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .modal-actions .btn { flex: 1; }
+  .ios-steps { display: flex; flex-direction: column; gap: 14px; margin: 6px 0 4px; }
+  .ios-steps .step { display: flex; gap: 12px; align-items: flex-start; font-size: 16px; font-weight: 600; }
+  .ios-steps .num {
+    background: var(--sun);
+    color: var(--ink);
+    min-width: 30px; height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 15px;
+  }
+  .confirm-text { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+
+  /* ============ TOAST ============ */
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 90px);
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--white);
+    font-size: 15px;
+    font-weight: 700;
+    padding: 12px 22px;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 100;
+    max-width: 90vw;
+    text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .feedback-burst {
+    position: fixed;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    font-size: 90px;
+    z-index: 60;
+    pointer-events: none;
+    animation: burst 0.7s ease forwards;
+  }
+  @keyframes burst {
+    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    35% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<div class="screen active" id="screen-home">
+  <div class="home-top">
+    <div class="stars-badge">⭐ <span id="star-count">0</span></div>
+    <button class="icon-btn" id="btn-install" title="Add to phone" style="display:none; width:auto; padding:0 16px; border-radius:999px; font-size:14px; font-weight:800;">📲 Add to phone</button>
+  </div>
+  <div class="home-mid">
+    <div class="mascot">🦜</div>
+    <div class="app-title">Petits Mots</div>
+    <div class="app-sub">Little words, big smiles</div>
+    <div class="due-pill" id="due-pill">Loading…</div>
+  </div>
+  <div class="home-bottom">
+    <button class="btn btn-primary btn-big btn-block" id="btn-play">▶️ Play!</button>
+    <button class="parent-hold" id="btn-parent">
+      <span class="hold-fill"></span>
+      <span style="position:relative;">👨‍👩‍👧 Hold for grown-ups</span>
+    </button>
+  </div>
+</div>
+
+<!-- ============ SESSION ============ -->
+<div class="screen" id="screen-session">
+  <div class="session-top">
+    <button class="icon-btn" id="btn-quit">✕</button>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+  <div class="practice-tag" id="practice-tag">🌟 Extra practice — just for fun!</div>
+  <div class="card-zone">
+    <div class="flashcard" id="flashcard">
+      <div class="card-pic" id="card-pic">🐶</div>
+      <div class="card-word" id="card-word"></div>
+      <div class="card-hint" id="card-hint"></div>
+      <div class="tap-hint" id="tap-hint">👆 Tap to hear the word</div>
+    </div>
+  </div>
+  <div class="answer-row hidden-row" id="answer-row">
+    <button class="btn btn-ghost" id="btn-again"><span class="big-emoji">🔁</span>Again</button>
+    <button class="btn btn-teal" id="btn-got"><span class="big-emoji">😄</span>Got it!</button>
+  </div>
+</div>
+
+<!-- ============ DONE ============ -->
+<div class="screen" id="screen-done">
+  <div class="done-title">Bravo! 🎉</div>
+  <div class="done-stars" id="done-stars">⭐ +0 stars</div>
+  <div class="done-total" id="done-total"></div>
+  <div class="done-buttons">
+    <button class="btn btn-primary btn-big" id="btn-play-more">🌟 Play more</button>
+    <button class="btn btn-ghost" id="btn-done-home">🏠 Home</button>
+  </div>
+</div>
+
+<!-- ============ PARENT ============ -->
+<div class="screen" id="screen-parent">
+  <div class="parent-top">
+    <button class="icon-btn" id="btn-parent-back">←</button>
+    <h2>Grown-up corner</h2>
+    <button class="btn btn-teal" id="btn-add-card" style="min-height:48px; padding:10px 18px; font-size:15px;">＋ Add word</button>
+  </div>
+
+  <div class="panel">
+    <h3>📈 Progress</h3>
+    <div class="boxbar" id="boxbar"></div>
+    <div class="box-legend" id="box-legend"></div>
+    <div class="due-note" id="parent-due-note"></div>
+  </div>
+
+  <div class="panel">
+    <h3>🗂 Words (<span id="card-count">0</span>)</h3>
+    <div class="cards-list" id="cards-list"></div>
+  </div>
+
+  <div class="panel">
+    <h3>⚙️ Settings</h3>
+    <div class="settings-list">
+      <button class="btn btn-ghost btn-block" id="btn-test-voice">🔊 Test the French voice</button>
+      <button class="btn btn-ghost btn-block" id="btn-install-2">📲 Add to phone</button>
+      <button class="btn btn-danger btn-block" id="btn-reset">🧹 Reset all progress</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CARD MODAL ============ -->
+<div class="modal-backdrop" id="modal-card">
+  <div class="modal">
+    <h3 id="card-modal-title">Add a word</h3>
+    <div class="field">
+      <label>French word (what the app will say)</label>
+      <input type="text" id="f-word" placeholder="le chien" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>English meaning (shown small, for you)</label>
+      <input type="text" id="f-hint" placeholder="dog" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Picture</label>
+      <div class="pic-preview" id="pic-preview"><span class="the-emoji">🖼️</span><span style="font-size:14px;color:var(--ink-soft);font-weight:600;">Pick an emoji below or use a photo</span></div>
+      <input type="text" id="f-emoji" placeholder="Type or pick an emoji" autocomplete="off" style="width:100%; font-size:17px; font-weight:600; padding:13px 14px; border:2px solid rgba(61,64,91,0.14); border-radius:14px; background:var(--cream); color:var(--ink); outline:none; margin-top:8px;">
+      <div class="emoji-grid" id="emoji-grid"></div>
+      <input type="file" id="f-photo" accept="image/*" style="display:none;">
+      <button class="link-btn" id="btn-pick-photo">📷 Use a photo instead</button>
+      <button class="link-btn" id="btn-clear-photo" style="display:none; color:var(--red);">✕ Remove photo</button>
+    </div>
+    <div class="field" id="audio-field">
+      <label>Your voice (optional — beats the robot!)</label>
+      <div class="audio-row">
+        <button class="rec-btn" id="btn-record">🎙️ Record</button>
+        <button class="rec-btn" id="btn-play-rec" style="display:none;">▶️ Listen</button>
+        <button class="link-btn" id="btn-clear-rec" style="display:none; color:var(--red);">✕ Remove</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="btn-card-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-card-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ iOS INSTALL MODAL ============ -->
+<div class="modal-backdrop" id="modal-ios">
+  <div class="modal">
+    <h3>Add to your iPhone 📲</h3>
+    <div class="ios-steps">
+      <div class="step"><span class="num">1</span><span>Tap the <strong>Share</strong> button <span style="font-size:20px;">⎋</span> at the bottom of Safari (the square with an arrow).</span></div>
+      <div class="step"><span class="num">2</span><span>Scroll down and tap <strong>Add to Home Screen</strong> <span style="font-size:18px;">➕</span>.</span></div>
+      <div class="step"><span class="num">3</span><span>Tap <strong>Add</strong> — Petits Mots will appear like a real app and work offline!</span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary btn-block" id="btn-ios-close">Got it!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONFIRM MODAL ============ -->
+<div class="modal-backdrop" id="modal-confirm">
+  <div class="modal">
+    <h3 id="confirm-title">Are you sure?</h3>
+    <p class="confirm-text" id="confirm-text"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="btn-confirm-no">Cancel</button>
+      <button class="btn btn-danger" id="btn-confirm-yes">Yes, do it</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+
+/* ================= Utilities ================= */
+const $ = (id) => document.getElementById(id);
+const uuid = () => (window.crypto && crypto.randomUUID)
+  ? crypto.randomUUID()
+  : "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+
+function todayNum() {
+  const d = new Date();
+  return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000);
+}
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+let toastTimer = null;
+function toast(msg) {
+  const el = $("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+}
+function burst(emoji) {
+  const el = document.createElement("div");
+  el.className = "feedback-burst";
+  el.textContent = emoji;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 750);
+}
+
+/* ================= Leitner config ================= */
+const INTERVALS = [0, 1, 2, 4, 7]; // days until next review, per box 1..5
+const BOX_COLORS = ["#FF6B6B", "#FFD166", "#8AC926", "#2EC4B6", "#5B8DEF"];
+const BOX_NAMES = ["New", "Learning", "Growing", "Strong", "Star"];
+const SESSION_SIZE = 8;
+const PRACTICE_SIZE = 6;
+
+/* ================= Starter deck ================= */
+const STARTER = [
+  { w: "le chien", h: "dog", e: "🐶" },
+  { w: "le chat", h: "cat", e: "🐱" },
+  { w: "l'oiseau", h: "bird", e: "🐦" },
+  { w: "le poisson", h: "fish", e: "🐟" },
+  { w: "le cheval", h: "horse", e: "🐴" },
+  { w: "le lapin", h: "rabbit", e: "🐰" },
+  { w: "la vache", h: "cow", e: "🐮" },
+  { w: "le canard", h: "duck", e: "🦆" },
+  { w: "le papillon", h: "butterfly", e: "🦋" },
+  { w: "rouge", h: "red", e: "🔴" },
+  { w: "bleu", h: "blue", e: "🔵" },
+  { w: "vert", h: "green", e: "🟢" },
+  { w: "jaune", h: "yellow", e: "🟡" },
+  { w: "un", h: "one", e: "1️⃣" },
+  { w: "deux", h: "two", e: "2️⃣" },
+  { w: "trois", h: "three", e: "3️⃣" },
+  { w: "la pomme", h: "apple", e: "🍎" },
+  { w: "la banane", h: "banana", e: "🍌" },
+  { w: "le pain", h: "bread", e: "🍞" },
+  { w: "le lait", h: "milk", e: "🥛" },
+  { w: "le fromage", h: "cheese", e: "🧀" },
+  { w: "le gâteau", h: "cake", e: "🍰" },
+  { w: "le soleil", h: "sun", e: "☀️" },
+  { w: "la lune", h: "moon", e: "🌙" },
+  { w: "l'étoile", h: "star", e: "⭐" },
+  { w: "la fleur", h: "flower", e: "🌸" },
+  { w: "l'arbre", h: "tree", e: "🌳" },
+  { w: "la maison", h: "house", e: "🏠" },
+  { w: "la voiture", h: "car", e: "🚗" },
+  { w: "le ballon", h: "balloon", e: "🎈" }
+];
+
+const EMOJI_CHOICES = ["🐶","🐱","🐭","🐰","🦊","🐻","🐼","🐷","🐮","🐴","🐑","🐔","🦆","🐸","🐟","🦋","🐝","🐢","🍎","🍌","🍓","🍇","🍊","🥕","🍞","🧀","🥛","🍰","🍪","🥚","☀️","🌙","⭐","🌈","🌸","🌳","🍂","❄️","🔥","💧","🏠","🚗","🚌","🚲","✈️","⛵","🎈","🎁","📚","🧸","👶","👧","👦","🧑","👵","👴","🖐️","👣","👀","👂","👃","👄","❤️","🔴","🔵","🟢","🟡","🟣","⚫","⚪","🟤","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣"];
+
+/* ================= IndexedDB ================= */
+const DB_NAME = "petits-mots";
+let db = null;
+
+function reqP(req) {
+  return new Promise((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains("cards")) d.createObjectStore("cards", { keyPath: "id" });
+      if (!d.objectStoreNames.contains("meta")) d.createObjectStore("meta", { keyPath: "key" });
+    };
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+}
+const getAllCards = () => reqP(db.transaction("cards").objectStore("cards").getAll());
+const putCard = (c) => reqP(db.transaction("cards", "readwrite").objectStore("cards").put(c));
+const deleteCard = (id) => reqP(db.transaction("cards", "readwrite").objectStore("cards").delete(id));
+async function getMeta(key, fallback) {
+  const row = await reqP(db.transaction("meta").objectStore("meta").get(key));
+  return row ? row.value : fallback;
+}
+const setMeta = (key, value) => reqP(db.transaction("meta", "readwrite").objectStore("meta").put({ key, value }));
+
+async function seedIfNeeded() {
+  const seeded = await getMeta("seeded", false);
+  if (seeded) return;
+  const t = todayNum();
+  for (const s of STARTER) {
+    await putCard({
+      id: uuid(), word: s.w, hint: s.h, emoji: s.e,
+      photo: null, audio: null,
+      box: 1, due: t, correct: 0, wrong: 0, createdAt: Date.now()
+    });
+  }
+  await setMeta("seeded", true);
+}
+
+/* ================= Speech / audio ================= */
+let frVoice = null;
+function pickVoice() {
+  if (!("speechSynthesis" in window)) return;
+  const voices = speechSynthesis.getVoices();
+  const fr = voices.filter(v => v.lang && v.lang.toLowerCase().indexOf("fr") === 0);
+  frVoice = fr.find(v => v.localService) || fr[0] || null;
+}
+if ("speechSynthesis" in window) {
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+}
+function speakText(text) {
+  if (!("speechSynthesis" in window)) { toast("No speech voice on this device"); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "fr-FR";
+  if (frVoice) u.voice = frVoice;
+  u.rate = 0.85;
+  speechSynthesis.speak(u);
+}
+function primeSpeech() {
+  if (!("speechSynthesis" in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(" ");
+    u.volume = 0;
+    speechSynthesis.speak(u);
+  } catch (e) { /* no-op */ }
+}
+
+const sharedAudio = new Audio();
+let sharedAudioUrl = null;
+function playBlob(blob) {
+  if (sharedAudioUrl) URL.revokeObjectURL(sharedAudioUrl);
+  sharedAudioUrl = URL.createObjectURL(blob);
+  sharedAudio.src = sharedAudioUrl;
+  sharedAudio.play().catch(() => { /* autoplay blocked; user can tap again */ });
+}
+function speakCard(card) {
+  if (card.audio) playBlob(card.audio);
+  else speakText(card.word);
+}
+
+/* ================= Screens ================= */
+const SCREENS = ["screen-home", "screen-session", "screen-done", "screen-parent"];
+function showScreen(id) {
+  SCREENS.forEach(s => $(s).classList.toggle("active", s === id));
+  window.scrollTo(0, 0);
+}
+
+/* ================= Home ================= */
+async function refreshHome() {
+  const cards = await getAllCards();
+  const t = todayNum();
+  const due = cards.filter(c => c.due <= t).length;
+  const stars = await getMeta("stars", 0);
+  $("star-count").textContent = stars;
+  const pill = $("due-pill");
+  if (cards.length === 0) {
+    pill.textContent = "No words yet — grown-ups, add some!";
+    $("btn-play").disabled = true;
+  } else if (due === 0) {
+    pill.textContent = "All done for today! 🎉 Play for fun?";
+    $("btn-play").disabled = false;
+  } else {
+    pill.textContent = due + (due === 1 ? " word" : " words") + " to practice today!";
+    $("btn-play").disabled = false;
+  }
+}
+
+/* ================= Session ================= */
+let session = null;
+
+async function startSession() {
+  const cards = await getAllCards();
+  if (cards.length === 0) return;
+  const t = todayNum();
+  let queue = cards.filter(c => c.due <= t);
+  let practice = false;
+  if (queue.length === 0) {
+    practice = true;
+    queue = shuffle(cards).slice(0, PRACTICE_SIZE);
+  } else {
+    queue = shuffle(queue).slice(0, SESSION_SIZE);
+  }
+  session = { queue, practice, index: 0, total: queue.length, stars: 0, retried: {}, revealed: false };
+  $("practice-tag").classList.toggle("show", practice);
+  primeSpeech();
+  showScreen("screen-session");
+  renderCard();
+}
+
+let cardPicUrl = null;
+function renderCard() {
+  const c = session.queue[session.index];
+  session.revealed = false;
+  const fc = $("flashcard");
+  fc.classList.remove("pop");
+  void fc.offsetWidth; // restart animation
+  fc.classList.add("pop");
+
+  const pic = $("card-pic");
+  if (cardPicUrl) { URL.revokeObjectURL(cardPicUrl); cardPicUrl = null; }
+  if (c.photo) {
+    cardPicUrl = URL.createObjectURL(c.photo);
+    pic.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = cardPicUrl;
+    img.alt = "";
+    pic.appendChild(img);
+  } else {
+    pic.textContent = c.emoji || "🖼️";
+  }
+  $("card-word").textContent = "";
+  $("card-hint").textContent = "";
+  $("tap-hint").textContent = "👆 Tap to hear the word";
+  $("answer-row").classList.add("hidden-row");
+  $("progress-fill").style.width = Math.round((session.index / session.total) * 100) + "%";
+}
+
+function revealCard() {
+  const c = session.queue[session.index];
+  if (!session.revealed) {
+    session.revealed = true;
+    $("card-word").textContent = c.word;
+    $("card-hint").textContent = c.hint || "";
+    $("tap-hint").textContent = "🔊 Tap again to repeat";
+    $("answer-row").classList.remove("hidden-row");
+  }
+  speakCard(c);
+}
+
+async function answerCard(good) {
+  if (!session || !session.revealed) return;
+  const c = session.queue[session.index];
+
+  if (!session.practice) {
+    if (good) {
+      c.box = Math.min(5, (c.box || 1) + 1);
+      c.due = todayNum() + INTERVALS[c.box - 1];
+      c.correct = (c.correct || 0) + 1;
+    } else {
+      c.box = 1;
+      c.due = todayNum();
+      c.wrong = (c.wrong || 0) + 1;
+    }
+    await putCard(c);
+  }
+
+  if (good) {
+    session.stars++;
+    burst("🌟");
+  } else {
+    burst("💪");
+    if (!session.retried[c.id]) {
+      session.retried[c.id] = true;
+      session.queue.push(c);
+      session.total++;
+    }
+  }
+
+  session.index++;
+  if (session.index >= session.queue.length) {
+    await finishSession();
+  } else {
+    setTimeout(renderCard, 550);
+  }
+}
+
+async function finishSession() {
+  $("progress-fill").style.width = "100%";
+  const earned = session.stars;
+  const stars = (await getMeta("stars", 0)) + earned;
+  await setMeta("stars", stars);
+  $("done-stars").textContent = "⭐ +" + earned + (earned === 1 ? " star" : " stars");
+  $("done-total").textContent = "You have " + stars + " stars altogether!";
+  setTimeout(() => {
+    showScreen("screen-done");
+    confetti();
+  }, 500);
+}
+
+function confetti() {
+  const host = $("screen-done");
+  const bits = ["🎉", "⭐", "✨", "🎊", "💛", "🧡"];
+  for (let i = 0; i < 26; i++) {
+    const el = document.createElement("span");
+    el.className = "confetti-bit";
+    el.textContent = bits[i % bits.length];
+    el.style.left = Math.random() * 100 + "%";
+    el.style.animationDuration = (1.8 + Math.random() * 1.6) + "s";
+    el.style.animationDelay = (Math.random() * 0.6) + "s";
+    host.appendChild(el);
+    setTimeout(() => el.remove(), 4200);
+  }
+}
+
+/* ================= Parent mode ================= */
+let rowPicUrls = [];
+
+async function refreshParent() {
+  const cards = await getAllCards();
+  const t = todayNum();
+  $("card-count").textContent = cards.length;
+
+  // Box distribution bar
+  const counts = [0, 0, 0, 0, 0];
+  cards.forEach(c => { counts[Math.min(5, Math.max(1, c.box || 1)) - 1]++; });
+  const bar = $("boxbar");
+  bar.innerHTML = "";
+  const total = cards.length || 1;
+  counts.forEach((n, i) => {
+    const seg = document.createElement("div");
+    seg.style.width = (n / total * 100) + "%";
+    seg.style.background = BOX_COLORS[i];
+    bar.appendChild(seg);
+  });
+  const legend = $("box-legend");
+  legend.innerHTML = "";
+  counts.forEach((n, i) => {
+    const span = document.createElement("span");
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    dot.style.background = BOX_COLORS[i];
+    span.appendChild(dot);
+    span.appendChild(document.createTextNode(BOX_NAMES[i] + ": " + n));
+    legend.appendChild(span);
+  });
+  const due = cards.filter(c => c.due <= t).length;
+  $("parent-due-note").textContent = due === 0 ? "Nothing due today — all caught up! ✅" : due + " due for review today.";
+
+  // Cards list
+  rowPicUrls.forEach(u => URL.revokeObjectURL(u));
+  rowPicUrls = [];
+  const list = $("cards-list");
+  list.innerHTML = "";
+  if (cards.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.innerHTML = '<div class="big">🗂️</div>No words yet.<br>Tap “＋ Add word” to make your first card!';
+    list.appendChild(empty);
+    return;
+  }
+  cards.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  cards.forEach(c => {
+    const row = document.createElement("div");
+    row.className = "card-row";
+
+    const pic = document.createElement("div");
+    pic.className = "row-pic";
+    if (c.photo) {
+      const url = URL.createObjectURL(c.photo);
+      rowPicUrls.push(url);
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "";
+      pic.appendChild(img);
+    } else {
+      pic.textContent = c.emoji || "🖼️";
+    }
+
+    const text = document.createElement("div");
+    text.className = "row-text";
+    const wordLine = document.createElement("div");
+    wordLine.className = "row-word";
+    wordLine.textContent = c.word;
+    const badge = document.createElement("span");
+    badge.className = "row-badge";
+    const bi = Math.min(5, Math.max(1, c.box || 1)) - 1;
+    badge.style.background = BOX_COLORS[bi];
+    badge.textContent = BOX_NAMES[bi];
+    wordLine.appendChild(badge);
+    const sub = document.createElement("div");
+    sub.className = "row-sub";
+    sub.textContent = (c.hint || "—") + (c.audio ? " · 🎙️ your voice" : "") + " · ✅ " + (c.correct || 0) + " · 🔁 " + (c.wrong || 0);
+    text.appendChild(wordLine);
+    text.appendChild(sub);
+
+    const listenBtn = document.createElement("button");
+    listenBtn.className = "mini-btn";
+    listenBtn.textContent = "🔊";
+    listenBtn.addEventListener("click", () => speakCard(c));
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "mini-btn";
+    editBtn.textContent = "✏️";
+    editBtn.addEventListener("click", () => openCardModal(c));
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "mini-btn";
+    delBtn.textContent = "🗑️";
+    delBtn.addEventListener("click", () => {
+      confirmAction("Delete “" + c.word + "”?", "This card and its photo/recording will be gone for good.", async () => {
+        await deleteCard(c.id);
+        toast("Deleted " + c.word);
+        refreshParent();
+      });
+    });
+
+    row.appendChild(pic);
+    row.appendChild(text);
+    row.appendChild(listenBtn);
+    row.appendChild(editBtn);
+    row.appendChild(delBtn);
+    list.appendChild(row);
+  });
+}
+
+/* ================= Card modal ================= */
+let editingCard = null;
+let formPhoto = null;
+let formAudio = null;
+let formPicUrl = null;
+
+function updatePicPreview() {
+  const prev = $("pic-preview");
+  prev.innerHTML = "";
+  if (formPicUrl) { URL.revokeObjectURL(formPicUrl); formPicUrl = null; }
+  if (formPhoto) {
+    formPicUrl = URL.createObjectURL(formPhoto);
+    const img = document.createElement("img");
+    img.src = formPicUrl;
+    img.alt = "";
+    prev.appendChild(img);
+    $("btn-clear-photo").style.display = "inline-block";
+  } else {
+    const em = document.createElement("span");
+    em.className = "the-emoji";
+    em.textContent = $("f-emoji").value.trim() || "🖼️";
+    prev.appendChild(em);
+    $("btn-clear-photo").style.display = "none";
+  }
+}
+function updateRecButtons() {
+  $("btn-play-rec").style.display = formAudio ? "inline-block" : "none";
+  $("btn-clear-rec").style.display = formAudio ? "inline-block" : "none";
+  $("btn-record").textContent = formAudio ? "🎙️ Re-record" : "🎙️ Record";
+}
+
+function openCardModal(card) {
+  editingCard = card || null;
+  formPhoto = card ? card.photo : null;
+  formAudio = card ? card.audio : null;
+  $("card-modal-title").textContent = card ? "Edit word" : "Add a word";
+  $("f-word").value = card ? card.word : "";
+  $("f-hint").value = card ? (card.hint || "") : "";
+  $("f-emoji").value = card ? (card.emoji || "") : "";
+  updatePicPreview();
+  updateRecButtons();
+  stopRecording(true);
+  $("modal-card").classList.add("open");
+}
+function closeCardModal() {
+  stopRecording(true);
+  $("modal-card").classList.remove("open");
+}
+
+async function saveCard() {
+  const word = $("f-word").value.trim();
+  if (!word) { toast("Please type the French word"); return; }
+  const emoji = $("f-emoji").value.trim();
+  if (!formPhoto && !emoji) { toast("Pick an emoji or add a photo"); return; }
+  const t = todayNum();
+  const card = editingCard || { id: uuid(), box: 1, due: t, correct: 0, wrong: 0, createdAt: Date.now() };
+  card.word = word;
+  card.hint = $("f-hint").value.trim();
+  card.emoji = formPhoto ? "" : emoji;
+  card.photo = formPhoto;
+  card.audio = formAudio;
+  await putCard(card);
+  closeCardModal();
+  toast(editingCard ? "Saved!" : "Added “" + word + "”");
+  refreshParent();
+}
+
+function processPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1000;
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      cv.getContext("2d").drawImage(img, 0, 0, w, h);
+      cv.toBlob((blob) => {
+        URL.revokeObjectURL(url);
+        if (blob) resolve(blob); else reject(new Error("Could not process photo"));
+      }, "image/jpeg", 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Could not read photo")); };
+    img.src = url;
+  });
+}
+
+/* ================= Recording ================= */
+let mediaRecorder = null;
+let recChunks = [];
+let recStream = null;
+
+function recordingSupported() {
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+}
+function pickMime() {
+  const types = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"];
+  for (const t of types) {
+    if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return "";
+}
+async function toggleRecording() {
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    stopRecording(false);
+    return;
+  }
+  if (!recordingSupported()) { toast("Recording not supported on this device"); return; }
+  try {
+    recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (e) {
+    toast("Microphone permission needed");
+    return;
+  }
+  recChunks = [];
+  const mime = pickMime();
+  try {
+    mediaRecorder = mime ? new MediaRecorder(recStream, { mimeType: mime }) : new MediaRecorder(recStream);
+  } catch (e) {
+    mediaRecorder = new MediaRecorder(recStream);
+  }
+  mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) recChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    if (recChunks.length > 0) {
+      formAudio = new Blob(recChunks, { type: mediaRecorder.mimeType || "audio/mp4" });
+      updateRecButtons();
+      toast("Recorded! Tap ▶️ to check it");
+    }
+    if (recStream) { recStream.getTracks().forEach(tr => tr.stop()); recStream = null; }
+  };
+  mediaRecorder.start();
+  $("btn-record").textContent = "⏹ Stop";
+  $("btn-record").classList.add("recording");
+}
+function stopRecording(discard) {
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    if (discard) mediaRecorder.onstop = () => { if (recStream) { recStream.getTracks().forEach(tr => tr.stop()); recStream = null; } };
+    mediaRecorder.stop();
+  }
+  $("btn-record").classList.remove("recording");
+  updateRecButtons();
+}
+
+/* ================= Confirm modal ================= */
+let confirmCb = null;
+function confirmAction(title, text, cb) {
+  $("confirm-title").textContent = title;
+  $("confirm-text").textContent = text;
+  confirmCb = cb;
+  $("modal-confirm").classList.add("open");
+}
+
+/* ================= Install ================= */
+let deferredPrompt = null;
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+function isStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+function updateInstallButtons() {
+  const show = !isStandalone() && (deferredPrompt || isIOS());
+  $("btn-install").style.display = show ? "inline-flex" : "none";
+  $("btn-install-2").style.display = show ? "inline-flex" : "none";
+}
+async function handleInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    try { await deferredPrompt.userChoice; } catch (e) { /* dismissed */ }
+    deferredPrompt = null;
+    updateInstallButtons();
+  } else if (isIOS()) {
+    $("modal-ios").classList.add("open");
+  }
+}
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  updateInstallButtons();
+});
+window.addEventListener("appinstalled", () => {
+  deferredPrompt = null;
+  updateInstallButtons();
+  toast("Installed! 🎉");
+});
+
+/* ================= Parent gate ================= */
+let holdTimer = null;
+function startHold() {
+  $("btn-parent").classList.add("holding");
+  holdTimer = setTimeout(async () => {
+    $("btn-parent").classList.remove("holding");
+    await refreshParent();
+    showScreen("screen-parent");
+  }, 1200);
+}
+function cancelHold() {
+  clearTimeout(holdTimer);
+  $("btn-parent").classList.remove("holding");
+}
+
+/* ================= Wire up ================= */
+function wireEvents() {
+  $("btn-play").addEventListener("click", startSession);
+  $("btn-play-more").addEventListener("click", startSession);
+  $("btn-done-home").addEventListener("click", async () => { await refreshHome(); showScreen("screen-home"); });
+  $("btn-quit").addEventListener("click", async () => {
+    session = null;
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    await refreshHome();
+    showScreen("screen-home");
+  });
+  $("flashcard").addEventListener("click", () => { if (session) revealCard(); });
+  $("btn-got").addEventListener("click", () => answerCard(true));
+  $("btn-again").addEventListener("click", () => answerCard(false));
+
+  const pb = $("btn-parent");
+  pb.addEventListener("pointerdown", startHold);
+  pb.addEventListener("pointerup", cancelHold);
+  pb.addEventListener("pointerleave", cancelHold);
+  pb.addEventListener("pointercancel", cancelHold);
+  pb.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  $("btn-parent-back").addEventListener("click", async () => { await refreshHome(); showScreen("screen-home"); });
+  $("btn-add-card").addEventListener("click", () => openCardModal(null));
+  $("btn-test-voice").addEventListener("click", () => speakText("Bonjour! Je suis le petit perroquet."));
+  $("btn-reset").addEventListener("click", () => {
+    confirmAction("Reset all progress?", "Every word goes back to the start and stars go to zero. Cards themselves are kept.", async () => {
+      const cards = await getAllCards();
+      const t = todayNum();
+      for (const c of cards) {
+        c.box = 1; c.due = t; c.correct = 0; c.wrong = 0;
+        await putCard(c);
+      }
+      await setMeta("stars", 0);
+      toast("Progress reset");
+      refreshParent();
+    });
+  });
+
+  $("btn-install").addEventListener("click", handleInstall);
+  $("btn-install-2").addEventListener("click", handleInstall);
+  $("btn-ios-close").addEventListener("click", () => $("modal-ios").classList.remove("open"));
+
+  $("btn-confirm-no").addEventListener("click", () => { confirmCb = null; $("modal-confirm").classList.remove("open"); });
+  $("btn-confirm-yes").addEventListener("click", async () => {
+    $("modal-confirm").classList.remove("open");
+    if (confirmCb) { const cb = confirmCb; confirmCb = null; await cb(); }
+  });
+
+  // Card modal
+  $("btn-card-cancel").addEventListener("click", closeCardModal);
+  $("btn-card-save").addEventListener("click", saveCard);
+  $("f-emoji").addEventListener("input", () => { formPhoto = null; $("f-photo").value = ""; updatePicPreview(); });
+  $("btn-pick-photo").addEventListener("click", () => $("f-photo").click());
+  $("f-photo").addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      formPhoto = await processPhoto(file);
+      updatePicPreview();
+    } catch (err) {
+      toast("Sorry, couldn't use that photo");
+    }
+  });
+  $("btn-clear-photo").addEventListener("click", () => { formPhoto = null; $("f-photo").value = ""; updatePicPreview(); });
+  $("btn-record").addEventListener("click", toggleRecording);
+  $("btn-play-rec").addEventListener("click", () => { if (formAudio) playBlob(formAudio); });
+  $("btn-clear-rec").addEventListener("click", () => { formAudio = null; updateRecButtons(); });
+
+  // Emoji grid
+  const grid = $("emoji-grid");
+  EMOJI_CHOICES.forEach(em => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = em;
+    b.addEventListener("click", () => {
+      $("f-emoji").value = em;
+      formPhoto = null;
+      $("f-photo").value = "";
+      updatePicPreview();
+    });
+    grid.appendChild(b);
+  });
+
+  // Close modals when tapping the backdrop
+  ["modal-card", "modal-ios", "modal-confirm"].forEach(id => {
+    $(id).addEventListener("click", (e) => {
+      if (e.target === $(id)) {
+        if (id === "modal-card") closeCardModal();
+        else $(id).classList.remove("open");
+      }
+    });
+  });
+}
+
+/* ================= Boot ================= */
+async function boot() {
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().catch(() => { /* best effort */ });
+  }
+  db = await openDB();
+  await seedIfNeeded();
+  wireEvents();
+  updateInstallButtons();
+  await refreshHome();
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(() => { /* offline still works next visit */ });
+  }
+}
+boot().catch(err => {
+  toast("Something went wrong starting the app");
+  console.error(err);
+});
+</script>
+</body>
+</html>
