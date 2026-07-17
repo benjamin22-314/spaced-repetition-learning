@@ -1,5 +1,5 @@
 /* Petits Mots service worker — bump CACHE version on every deploy */
-const CACHE = "petits-mots-v1";
+const CACHE = "petits-mots-v3";
 const SHELL = [
   "./",
   "./index.html",

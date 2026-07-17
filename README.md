@@ -8,7 +8,7 @@ Built for little kids learning their first French words: big tappable cards, a p
 
 ## Features
 
-- 🇫🇷 **Starter deck of 30 French words** (animals, colours, numbers, food, everyday things) using emoji as pictures — works out of the box.
+- 🇫🇷 **Starter deck of 30 French words** (animals, colours, numbers, food, everyday things) plus **simple sentences** ("Je m'appelle Amy", "J'aime manger des chips", …) using emoji as pictures — works out of the box. Starter cards are seed-versioned, so app updates can add new cards to existing installs without duplicates.
 - 🔊 **Speaks every word** with the device's French voice (`speechSynthesis`, `fr-FR`).
 - 🎙️ **Record your own voice** for any card — Mum's pronunciation beats the robot. Recordings are stored on-device.
 - 📷 **Custom cards with photos**: snap a picture, it's downscaled to ≤1000px JPEG before storing. Add words in any language, not just French.
