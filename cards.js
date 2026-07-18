@@ -46,6 +46,9 @@ const DECK = {
     { k: "un", w: "un", h: "one", e: "1️⃣" },
     { k: "deux", w: "deux", h: "two", e: "2️⃣" },
     { k: "trois", w: "trois", h: "three", e: "3️⃣" },
+    { k: "quatre", w: "quatre", h: "four", e: "4️⃣" },
+    { k: "cinq", w: "cinq", h: "five", e: "5️⃣" },
+    { k: "six", w: "six", h: "six", e: "6️⃣" },
 
     // Food
     { k: "pomme", w: "la pomme", h: "apple", e: "🍎" },
