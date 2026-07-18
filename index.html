@@ -549,6 +549,7 @@
 
 <div id="toast"></div>
 
+<script src="./cards.js"></script>
 <script>
 "use strict";
 
@@ -593,52 +594,8 @@ const BOX_NAMES = ["New", "Learning", "Growing", "Strong", "Star"];
 const SESSION_SIZE = 8;
 const PRACTICE_SIZE = 6;
 
-/* ================= Starter deck ================= */
-const STARTER = [
-  { w: "le chien", h: "dog", e: "🐶" },
-  { w: "le chat", h: "cat", e: "🐱" },
-  { w: "l'oiseau", h: "bird", e: "🐦" },
-  { w: "le poisson", h: "fish", e: "🐟" },
-  { w: "le cheval", h: "horse", e: "🐴" },
-  { w: "le lapin", h: "rabbit", e: "🐰" },
-  { w: "la vache", h: "cow", e: "🐮" },
-  { w: "le canard", h: "duck", e: "🦆" },
-  { w: "le papillon", h: "butterfly", e: "🦋" },
-  { w: "rouge", h: "red", e: "🔴" },
-  { w: "bleu", h: "blue", e: "🔵" },
-  { w: "vert", h: "green", e: "🟢" },
-  { w: "jaune", h: "yellow", e: "🟡" },
-  { w: "un", h: "one", e: "1️⃣" },
-  { w: "deux", h: "two", e: "2️⃣" },
-  { w: "trois", h: "three", e: "3️⃣" },
-  { w: "la pomme", h: "apple", e: "🍎" },
-  { w: "la banane", h: "banana", e: "🍌" },
-  { w: "le pain", h: "bread", e: "🍞" },
-  { w: "le lait", h: "milk", e: "🥛" },
-  { w: "le fromage", h: "cheese", e: "🧀" },
-  { w: "le gâteau", h: "cake", e: "🍰" },
-  { w: "le soleil", h: "sun", e: "☀️" },
-  { w: "la lune", h: "moon", e: "🌙" },
-  { w: "l'étoile", h: "star", e: "⭐" },
-  { w: "la fleur", h: "flower", e: "🌸" },
-  { w: "l'arbre", h: "tree", e: "🌳" },
-  { w: "la maison", h: "house", e: "🏠" },
-  { w: "la voiture", h: "car", e: "🚗" },
-  { w: "le ballon", h: "balloon", e: "🎈" }
-];
-
-/* Seed version 2: simple sentences */
-const SENTENCES = [
-  { w: "Je m'appelle Amy.", h: "My name is Amy", e: "👧" },
-  { w: "Ma couleur préférée est le bleu.", h: "My favourite colour is blue", e: "💙" },
-  { w: "J'aime manger des chips.", h: "I like to eat chips (the crunchy kind!)", e: "🥔😋" },
-  { w: "Bonjour !", h: "Hello!", e: "👋" },
-  { w: "Merci beaucoup !", h: "Thank you very much!", e: "🙏" },
-  { w: "Je t'aime.", h: "I love you", e: "❤️" },
-  { w: "Bonne nuit.", h: "Good night", e: "😴" },
-  { w: "Encore, s'il te plaît !", h: "Again, please!", e: "🔁" },
-  { w: "L'école des sorcières et des fées d'Amy", h: "Amy's school of witches and fairies", e: "🧙‍♀️🧚" }
-];
+/* Built-in cards live in ./cards.js (the DECK global) — edit that file
+   to change the deck; syncDeck() reconciles it with the device on boot. */
 
 const EMOJI_CHOICES = ["🐶","🐱","🐭","🐰","🦊","🐻","🐼","🐷","🐮","🐴","🐑","🐔","🦆","🐸","🐟","🦋","🐝","🐢","🍎","🍌","🍓","🍇","🍊","🥕","🍞","🧀","🥛","🍰","🍪","🥚","☀️","🌙","⭐","🌈","🌸","🌳","🍂","❄️","🔥","💧","🏠","🚗","🚌","🚲","✈️","⛵","🎈","🎁","📚","🧸","👶","👧","👦","🧑","👵","👴","🖐️","👣","👀","👂","👃","👄","❤️","🔴","🔵","🟢","🟡","🟣","⚫","⚪","🟤","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣"];
 
@@ -673,31 +630,66 @@ async function getMeta(key, fallback) {
 }
 const setMeta = (key, value) => reqP(db.transaction("meta", "readwrite").objectStore("meta").put({ key, value }));
 
-async function seedCards(list) {
-  const t = todayNum();
-  for (const s of list) {
-    await putCard({
-      id: uuid(), word: s.w, hint: s.h, emoji: s.e,
-      photo: null, audio: null,
-      box: 1, due: t, correct: 0, wrong: 0, createdAt: Date.now()
-    });
-  }
-}
-/* Seed versions let later updates add new starter cards to phones
-   that already ran the app, without duplicating existing ones. */
-async function seedIfNeeded() {
+/* Reconcile the DECK file (cards.js) with the device database.
+   Deck cards carry a stable key `k`; cards created in-app have none and
+   are never touched. Device-owned fields (photo, audio, box, due, stats)
+   always survive; deck-owned fields (word, hint, emoji) follow the file
+   unless the parent edited the card in-app. Deck cards deleted in-app
+   are tombstoned in removedKeys so a sync doesn't bring them back. */
+async function syncDeck() {
+  // One-time cleanup from the old seed-version system
   const legacySeeded = await getMeta("seeded", false);
   const version = await getMeta("seedVersion", legacySeeded ? 1 : 0);
-  if (version < 1) await seedCards(STARTER);
-  if (version < 2) await seedCards(SENTENCES);
   if (version >= 2 && version < 3) {
-    // v3: retire a starter sentence we no longer ship
-    const cards = await getAllCards();
-    for (const c of cards) {
+    const old = await getAllCards();
+    for (const c of old) {
       if (/^J'ai \S+ ans\.$/.test(c.word)) await deleteCard(c.id);
     }
   }
   if (version < 3) await setMeta("seedVersion", 3);
+
+  if (typeof DECK === "undefined" || !DECK || !Array.isArray(DECK.cards)) return;
+  const removedKeys = await getMeta("removedKeys", []);
+  const cards = await getAllCards();
+  const byKey = {};
+  const byWord = {};
+  cards.forEach(c => {
+    if (c.k) byKey[c.k] = c;
+    else if (!(c.word in byWord)) byWord[c.word] = c;
+  });
+  const t = todayNum();
+  const inDeck = {};
+  for (const d of DECK.cards) {
+    if (!d || !d.k || !d.w) continue;
+    inDeck[d.k] = true;
+    if (removedKeys.indexOf(d.k) !== -1) continue;
+    let c = byKey[d.k];
+    if (!c && byWord[d.w]) {
+      // Adopt a card seeded by the pre-cards.js system
+      c = byWord[d.w];
+      c.k = d.k;
+      byKey[d.k] = c;
+      await putCard(c);
+    }
+    if (!c) {
+      await putCard({
+        id: uuid(), k: d.k, word: d.w, hint: d.h || "", emoji: d.e || "",
+        photo: null, audio: null,
+        box: 1, due: t, correct: 0, wrong: 0, createdAt: Date.now()
+      });
+    } else if (!c.edited) {
+      const emoji = c.photo ? (c.emoji || "") : (d.e || "");
+      if (c.word !== d.w || (c.hint || "") !== (d.h || "") || (c.emoji || "") !== emoji) {
+        c.word = d.w;
+        c.hint = d.h || "";
+        c.emoji = emoji;
+        await putCard(c);
+      }
+    }
+  }
+  for (const c of cards) {
+    if (c.k && !inDeck[c.k]) await deleteCard(c.id);
+  }
 }
 
 /* ================= Speech / audio ================= */
@@ -994,6 +986,13 @@ async function refreshParent() {
     delBtn.textContent = "🗑️";
     delBtn.addEventListener("click", () => {
       confirmAction("Delete “" + c.word + "”?", "This card and its photo/recording will be gone for good.", async () => {
+        if (c.k) {
+          const removed = await getMeta("removedKeys", []);
+          if (removed.indexOf(c.k) === -1) {
+            removed.push(c.k);
+            await setMeta("removedKeys", removed);
+          }
+        }
         await deleteCard(c.id);
         toast("Deleted " + c.word);
         refreshParent();
@@ -1070,6 +1069,7 @@ async function saveCard() {
   card.emoji = formPhoto ? "" : emoji;
   card.photo = formPhoto;
   card.audio = formAudio;
+  if (editingCard && editingCard.k) card.edited = true; // parent's version now wins over cards.js
   await putCard(card);
   closeCardModal();
   toast(editingCard ? "Saved!" : "Added “" + word + "”");
@@ -1314,7 +1314,7 @@ async function boot() {
     navigator.storage.persist().catch(() => { /* best effort */ });
   }
   db = await openDB();
-  await seedIfNeeded();
+  await syncDeck();
   wireEvents();
   updateInstallButtons();
   await refreshHome();

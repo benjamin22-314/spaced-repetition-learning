@@ -8,7 +8,7 @@ Built for little kids learning their first French words: big tappable cards, a p
 
 ## Features
 
-- 🇫🇷 **Starter deck of 30 French words** (animals, colours, numbers, food, everyday things) plus **simple sentences** ("Je m'appelle Amy", "J'aime manger des chips", …) using emoji as pictures — works out of the box. Starter cards are seed-versioned, so app updates can add new cards to existing installs without duplicates.
+- 🇫🇷 **Starter deck of 30 French words** (animals, colours, numbers, food, everyday things) plus **simple sentences** ("Je m'appelle Amy", "J'aime manger des chips", …) using emoji as pictures — works out of the box. The deck lives in [`cards.js`](cards.js) and installed phones sync to it on every launch (see "Editing the deck" below).
 - 🔊 **Speaks every word** with the device's French voice (`speechSynthesis`, `fr-FR`).
 - 🎙️ **Record your own voice** for any card — Mum's pronunciation beats the robot. Recordings are stored on-device.
 - 📷 **Custom cards with photos**: snap a picture, it's downscaled to ≤1000px JPEG before storing. Add words in any language, not just French.
@@ -16,6 +16,16 @@ Built for little kids learning their first French words: big tappable cards, a p
 - 🌟 **Kid-friendly reward loop**: stars for every correct card, confetti at the end of a session, and a "practice for fun" mode when nothing is due (practice doesn't affect scheduling).
 - 👨‍👩‍👧 **Grown-up corner** behind a hold-to-enter gate (1.2s press): manage cards, see the box distribution, test the voice, reset progress (with confirmation).
 - 📲 **Installable PWA**: "Add to phone" button (native prompt on Android/desktop, illustrated Share → Add to Home Screen steps on iOS). Fully offline once installed.
+
+## Editing the deck
+
+All built-in cards live in one self-describing file: [`cards.js`](cards.js). The workflow for adding cards is deliberately LLM-friendly:
+
+1. Paste the whole of `cards.js` into any LLM chat and ask for what you want ("add ten words about the beach in the same format").
+2. Replace the file with the output, commit, and push.
+3. Each phone reconciles on its next launch — no version numbers to bump (the service-worker cache serves the old file while fetching the new one, so it can take two launches to appear).
+
+Sync rules: new keys are added, removed keys are deleted, and changed `w`/`h`/`e` values update in place while the card's learning progress is kept. Cards created inside the app are never touched; deck cards edited in-app keep the parent's version; deck cards deleted in-app stay deleted (tombstoned). The card format and full rules are documented in the header of `cards.js` itself.
 
 ## Tech notes
 

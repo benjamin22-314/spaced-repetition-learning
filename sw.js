@@ -1,8 +1,9 @@
 /* Petits Mots service worker — bump CACHE version on every deploy */
-const CACHE = "petits-mots-v3";
+const CACHE = "petits-mots-v4";
 const SHELL = [
   "./",
   "./index.html",
+  "./cards.js",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
