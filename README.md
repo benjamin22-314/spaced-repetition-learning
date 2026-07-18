@@ -22,7 +22,7 @@ Built for little kids learning their first French words: big tappable cards, a p
 All built-in cards live in one self-describing file: [`cards.js`](cards.js). The workflow for adding cards is deliberately LLM-friendly:
 
 1. Paste the whole of `cards.js` into any LLM chat and ask for what you want ("add ten words about the beach in the same format").
-2. Replace the file with the output, commit, and push.
+2. Replace the file with the output, then sanity-check it before committing: `node --check cards.js` (catches syntax errors — a broken file fails soft in the app, but new cards won't arrive until it's fixed). Also make sure no two cards share the same `k`.
 3. Each phone reconciles on its next launch — no version numbers to bump (the service-worker cache serves the old file while fetching the new one, so it can take two launches to appear).
 
 Sync rules: new keys are added, removed keys are deleted, and changed `w`/`h`/`e` values update in place while the card's learning progress is kept. Cards created inside the app are never touched; deck cards edited in-app keep the parent's version; deck cards deleted in-app stay deleted (tombstoned). The card format and full rules are documented in the header of `cards.js` itself.
